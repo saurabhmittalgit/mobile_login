@@ -19,6 +19,14 @@ function mobile_login_menu() {
     'file' => 'mobile_login.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['user/update-username/%/%'] = array(
+    'title' => 'Update Login Username',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mobile_login_udpate_username_form'),
+    'access arguments' => array('access content'),
+    'file' => 'mobile_login.form.inc',
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }

@@ -121,13 +121,50 @@ function mobile_login_configuration_form($form, $form_state) {
   $form['mobile_login_config']['mobile_bulk_update_notification']['email_body'] = array(
     '#type' => 'textarea',
     '#title' => t('Force update username email message'),
-    '#description' => t('Force update login username to mobile number email message.'),
+    '#description' => t('Force update login username to mobile number email message.<br >You can use <b>@update-link</b> placeholder to replace with update link url.'),
     '#default_value' => isset($default_values['mobile_bulk_update_notification']['email_body']) ? $default_values['mobile_bulk_update_notification']['email_body'] : '',
     '#states' => array(
       'visible' => array(
         ':input[name="mobile_login_config[mobile_bulk_update_notification][force_send_email_to_change_username]"]' => array('checked' => TRUE),
       ),
     ),
+  );
+  $form['mobile_login_config']['mobile_bulk_update_notification']['send_thankyou_after_update'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Send Thankyou mail after update username.'),
+    '#description' => t('If checked, System will send email to user after successful update on their username.'),
+    '#default_value' => isset($default_values['mobile_bulk_update_notification']['send_thankyou_after_update']) ? $default_values['mobile_bulk_update_notification']['send_thankyou_after_update'] : 0,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="mobile_login_config[mobile_bulk_update_notification][force_send_email_to_change_username]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
+  $form['mobile_login_config']['mobile_update_thankyou'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Mobile number update thankyou notification'),
+    '#collapsible' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="mobile_login_config[mobile_bulk_update_notification][send_thankyou_after_update]"]' => array('checked' => TRUE),
+        ':input[name="mobile_login_config[mobile_bulk_update_notification][force_send_email_to_change_username]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['mobile_login_config']['mobile_update_thankyou']['email_subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Thank you email subject'),
+    '#description' => t('After updating username thank you email subject.'),
+    '#required' => TRUE,
+    '#default_value' => isset($default_values['mobile_update_thankyou']['email_subject']) ? $default_values['mobile_update_thankyou']['email_subject'] : '',
+  );
+  $form['mobile_login_config']['mobile_update_thankyou']['email_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Thank you email message'),
+    '#description' => t('After updating username thank you email message.'),
+    '#required' => TRUE,
+    '#default_value' => isset($default_values['mobile_update_thankyou']['email_body']) ? $default_values['mobile_update_thankyou']['email_body'] : '',
   );
 
   // Additional submit callback.
@@ -237,11 +274,15 @@ function _is_current_admin_user_is_allowed_without_mobile_login($allowed_users) 
  * Send force udpate login username email.
  */
 function send_force_login_update_email_notification($email, $subject, $body) {
+  $placeholders = array(
+    '@update-link' => _mobile_login_update_notification_link($email),
+  );
+
   $message = array(
     'id' => 'force-update-login',
     'to' => $email,
     'subject' => $subject,
-    'body' => $body,
+    'body' => format_string($body, $placeholders),
     'headers' => array(
       'MIME-Version' => '1.0',
       'Content-Type' => 'text/html; charset=UTF-8; format=flowed; delsp=yes',
@@ -258,4 +299,16 @@ function send_force_login_update_email_notification($email, $subject, $body) {
       'mobile_login', 'force-update-login - Email sending failed for ' . $email, array(), WATCHDOG_ERROR
     );
   }
+}
+
+/**
+ * Get link for update user login to mobile Number login.
+ */
+function _mobile_login_update_notification_link($email) {
+  global $base_url;
+
+  $account = user_load_by_mail($email);
+  $md5_param = $email . $account->name;
+
+  return $base_url . '/user/update-username/' . $email . '/' . md5($md5_param);
 }

@@ -3,5 +3,5 @@ description = User can login via their mobile number.
 core = 7.x
 version = 7.x-1.0
 dependencies[] = user
-
-package =  Custom
+package =  Other
+configure = admin/config/mobile-login-settings
