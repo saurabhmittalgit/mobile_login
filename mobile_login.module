@@ -110,3 +110,18 @@ function mobile_user_register_number_validate(&$form, &$form_state) {
     form_set_error('name', t('Please enter valid mobile number.'));
   }
 }
+
+/**
+ * Implements hook_mail().
+ */
+function mobile_login_mail($key, &$message, $params) {
+  if ($key == 'force-update-login') {
+    $message['body'] = $params['body'];
+    $message['subject'] = $params['subject'];
+  }
+  // Update username thankyou email.
+  elseif ($key == 'mobile-login-update-thankyou') {
+    $message['body'] = $params['body'];
+    $message['subject'] = $params['subject'];
+  }
+}

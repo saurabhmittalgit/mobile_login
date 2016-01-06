@@ -84,6 +84,19 @@ function mobile_login_udpate_username_form_submit($form, $form_state) {
     $account->name = $form_state['values']['new_username'];
     user_save($account);
 
+    $mobile_login_config = variable_get('mobile_login_config');
+    // If send thankyou email after successful update.
+    if ($mobile_login_config['mobile_bulk_update_notification']['force_send_email_to_change_username'] && $mobile_login_config['mobile_bulk_update_notification']['send_thankyou_after_update']) {
+      // Sending thankyou email.
+      global $language;
+
+      drupal_mail('mobile_login', 'mobile-login-update-thankyou', $account->mail, $language->language, array(
+        'subject' => $mobile_login_config['mobile_update_thankyou']['email_subject'],
+        'body' => $mobile_login_config['mobile_update_thankyou']['email_body'],
+        )
+      );
+    }
+
     drupal_set_message('Username updated successfully.');
   }
   else {

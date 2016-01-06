@@ -274,31 +274,17 @@ function _is_current_admin_user_is_allowed_without_mobile_login($allowed_users) 
  * Send force udpate login username email.
  */
 function send_force_login_update_email_notification($email, $subject, $body) {
+  global $language;
+
   $placeholders = array(
     '@update-link' => _mobile_login_update_notification_link($email),
   );
 
-  $message = array(
-    'id' => 'force-update-login',
-    'to' => $email,
+  drupal_mail('mobile_login', 'force-update-login', $email, $language->language, array(
     'subject' => $subject,
     'body' => format_string($body, $placeholders),
-    'headers' => array(
-      'MIME-Version' => '1.0',
-      'Content-Type' => 'text/html; charset=UTF-8; format=flowed; delsp=yes',
-      'Content-Transfer-Encoding' => '8Bit',
-      'Return-Path' => '',
-    ),
+    )
   );
-
-  $system = drupal_mail_system('mobile_login', 'force-update-login');
-  $system->format($message);
-
-  if (!($system->mail($message))) {
-    watchdog(
-      'mobile_login', 'force-update-login - Email sending failed for ' . $email, array(), WATCHDOG_ERROR
-    );
-  }
 }
 
 /**
