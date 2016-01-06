@@ -1,0 +1,104 @@
+<?php
+
+/**
+ * @file
+ *  Mobile login Module file.
+ */
+
+/**
+ * Implements hook_menu()
+ */
+function mobile_login_menu() {
+  $items = array();
+
+  $items['admin/config/mobile-login-settings'] = array(
+    'title' => 'Mobile No. Login Configurations',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mobile_login_configuration_form'),
+    'access arguments' => array('administrator'),
+    'file' => 'mobile_login.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function mobile_login_form_alter(&$form, &$form_state, $form_id) {
+  // User login form.
+  if ($form_id == 'user_login_block' || $form_id == 'user_login') {
+    $login_config = variable_get('mobile_login_config');
+
+    // User login form, username field attributes.
+    if (!empty($login_config['mobile_user_login'])) {
+      $form['name']['#title'] = t('@login_label', array('@login_label' => $login_config['mobile_user_login']['login_name_field_label']));
+      $form['name']['#maxlength'] = t('@login_maxlength', array('@login_maxlength' => $login_config['mobile_user_login']['login_name_field_maxlength']));
+
+      if (!empty($login_config['mobile_user_login']['login_name_field_description'])) {
+        $form['name']['#description'] = t('@desc', array('@desc' => $login_config['mobile_user_login']['login_name_field_description']));
+      }
+    }
+
+    if ($login_config['force_mobile_login']) {
+      $form['#validate'][] = 'mobile_user_login_number_validate';
+    }
+  }
+  // User register form.
+  elseif ($form_id == 'user_register_form') {
+    $login_config = variable_get('mobile_login_config');
+
+    if ($login_config['mobile_register_user']) {
+      // User login form, username field attributes.
+      $form['account']['name']['#title'] = t('@login_label', array('@login_label' => $login_config['mobile_register_user']['username_lable']));
+      $form['account']['name']['#maxlength'] = t('@login_maxlength', array('@login_maxlength' => $login_config['mobile_user_login']['login_name_field_maxlength']));
+
+      if (!empty($login_config['mobile_register_user']['username_description'])) {
+        $form['account']['name']['#description'] = t('@desc', array('@desc' => $login_config['mobile_register_user']['username_description']));
+      }
+    }
+
+    if ($login_config['force_mobile_login']) {
+      $form['#validate'][] = 'mobile_user_register_number_validate';
+    }
+  }
+  // forget Password.
+  elseif ($form_id == 'user_pass') {
+    $login_config = variable_get('mobile_login_config');
+
+    if (!empty($login_config['forget_password']['username_lable'])) {
+      $form['name']['#title'] = t('@title', array('@title' => $login_config['forget_password']['username_lable']));
+    }
+  }
+}
+
+/**
+ * User login form mobile number validate.
+ */
+function mobile_user_login_number_validate(&$form, &$form_state) {
+  $login_config = variable_get('mobile_login_config');
+
+  if (!is_numeric($form_state['values']['name']) && $login_config['force_mobile_login'] && !empty($login_config['allowed_non_mobile_login_username'])) {
+    $alloweded_names = explode(',', $login_config['allowed_non_mobile_login_username']);
+    // If force mobile login, and username is exists in allowed names without mobile login.
+    if (in_array($form_state['values']['name'], $alloweded_names)) {
+      return TRUE;
+    }
+    else {
+      form_set_error('name', t('Please enter valid mobile number.'));
+    }
+  }
+  elseif (!is_numeric($form_state['values']['name']) && $login_config['force_mobile_login']) {
+    form_set_error('name', t('Please enter valid mobile number.'));
+  }
+}
+
+/**
+ * User register form mobile number validate.
+ */
+function mobile_user_register_number_validate(&$form, &$form_state) {
+  if (!is_numeric($form_state['values']['name'])) {
+    form_set_error('name', t('Please enter valid mobile number.'));
+  }
+}
