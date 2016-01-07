@@ -229,7 +229,7 @@ function user_mobile_login_force_update_notification_batch_process(&$context) {
   $email_body = $email_config['mobile_bulk_update_notification']['email_body'];
 
   // With each pass through the callback, retrieve the next group of uids.
-  $result = db_query("SELECT uid,mail FROM {users} WHERE name not REGEXP '^[0-9]' AND uid NOT IN (0) AND uid > " . $context['sandbox']['current_user'] . " ORDER BY uid ASC limit 0, $limit")->fetchAll();
+  $result = db_query("SELECT uid,mail FROM {users} WHERE name not REGEXP '^[0-9]' AND uid NOT IN (0) AND uid > " . $context['sandbox']['current_user'] . " AND status=1 ORDER BY uid ASC limit 0, $limit")->fetchAll();
 
   if (!empty($result)) {
     foreach ($result as $record) {
