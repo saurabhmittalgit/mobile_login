@@ -21,10 +21,14 @@ Here you can configure below settings.
 1. Force mobile login,
     ** If you want to allow only mobile number login on your site, check this option.
     Now user can only be login by only their mobile number.
+
 2. Allowed non mobile usernames
     ** place comma separated usernames that you want to allow with old username.
+
 3. User login form username field label, allowed max length and descriptions.
+
 4. Register new user form username field label, allowed max length and descriptions.
+
 5. Forget password form username field label, allowed max length and descriptions.
 
 6. Force Update Email notification.
